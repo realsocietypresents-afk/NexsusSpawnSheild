@@ -1,0 +1,70 @@
+# NexusSpawnShield configuration.
+#
+# What this does: inside a chunk-radius zone centered on the coordinates below, this plugin
+# forces the outcome of every relevant event at the highest possible priority -- overriding
+# whatever any other plugin (NexusRealms' land claims included) decided first:
+#   - Right-click interactions (doors, trapdoors, fence gates, buttons, levers, pressure plates,
+#     chests, trapped chests, barrels, ender chests, shulker boxes, furnaces, crafting tables,
+#     anvils, every other functional/interactable block) are ALWAYS allowed, for everyone.
+#   - Breaking blocks, placing blocks, and hitting other players / armor stands / vehicles are
+#     BLOCKED for everyone EXCEPT the players listed under exempt-players below.
+#   - Players can kill mobs, and mobs cannot hurt players (both switchable, see settings below).
+#
+# This was built as a root-cause-agnostic override: it doesn't matter *why* something was
+# denying chest access at spawn (NexusRealms land claims were the leading suspect) -- inside
+# this zone, this plugin's decision wins regardless.
+
+zone:
+  # Must match the actual Bukkit world name (not the client's "minecraft:overworld" label).
+  # This is almost always "world" for the main overworld on a standard Paper server unless it
+  # was renamed -- confirm with /nexusspawnshield status once installed, and fix this if wrong.
+  world: world
+  # Fixed center, in BLOCK coordinates (not chunk coordinates) -- from the F3 debug screen.
+  center-x: -16649
+  center-z: 9646
+  # Radius in CHUNKS (Chebyshev/"chessboard" distance from the center chunk), as requested --
+  # 1000 chunks is a 2001x2001 chunk square (about 32,016 x 32,016 blocks) centered on the point
+  # above. That's a very large area; narrow this down later with /nexusspawnshield reload after
+  # editing this value if it turns out to be more than intended.
+  radius-chunks: 1000
+
+settings:
+  # Master on/off switch. Also toggleable live -- see /nexusspawnshield status.
+  enabled: true
+  # Protect things from being hit by players inside the zone: other players, armor stands, boats,
+  # minecarts, end crystals and the like. (Mobs are NOT covered here; see mobs-killable below.)
+  # Turn this off and this plugin stops interfering with player hits entirely.
+  block-killing: true
+  # Players CAN hurt and kill mobs inside the zone: hostile ones (zombies, skeletons, creepers,
+  # slimes, phantoms, bosses...) are forced killable even if another plugin said no; animals,
+  # villagers and pets are simply no longer blocked by this plugin. Set to false to go back to
+  # v1.0.2, where nothing could be hit by a player inside the zone.
+  mobs-killable: true
+  # Mobs, and anything a mob fires or summons (arrows, fireballs, wither skulls, evoker fangs),
+  # cannot damage players inside the zone. Falling, fire, lava, drowning and potion effects still
+  # work normally. Players with their personal bypass on (/nexusspawnshield bypass) are not shielded,
+  # so staff can test. The exempt-players list is NOT the same thing: exempt players are shielded too.
+  players-safe-from-mobs: true
+  # Cancel BlockBreakEvent for non-exempt players inside the zone.
+  block-breaking: true
+  # Cancel BlockPlaceEvent for non-exempt players inside the zone.
+  block-placing: true
+  # Also treat bucket-empty (lava/water/powder snow dumping) as "placing" and bucket-fill as
+  # "breaking" for non-exempt players inside the zone -- buckets are a common way around the two
+  # settings above otherwise.
+  block-buckets: true
+  # Force every right-click block interaction inside the zone to succeed, for everyone, no
+  # matter what any other plugin decided first. This is the fix for "you can't use that here."
+  force-allow-interactions: true
+
+# Players who are allowed to kill/break/place inside the zone anyway. Case-insensitive.
+# Edit live with /nexusspawnshield exempt add <name> / exempt remove <name> / exempt list --
+# those commands persist back here automatically.
+exempt-players:
+  - RealSociety5107
+
+# A periodic summary of blocked attempts instead of one message per attempt, in case a lot of
+# players are inside this (very large) zone at once.
+heartbeat:
+  enabled: true
+  summary-interval-seconds: 60
